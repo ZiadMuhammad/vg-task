@@ -29,7 +29,7 @@ export async function login(
   if (membershipError)
     return { error: "We couldn’t check your access. Please try again." };
   if (!data) {
-    await supabase.auth.signOut();
+    await supabase.auth.signOut({ scope: "local" });
     return {
       error:
         "This account hasn’t been assigned to a brand. Contact your administrator.",
@@ -40,6 +40,6 @@ export async function login(
 
 export async function signOut() {
   const supabase = await createClient();
-  await supabase.auth.signOut();
+  await supabase.auth.signOut({ scope: "local" });
   redirect("/login");
 }

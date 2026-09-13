@@ -40,7 +40,39 @@ for (const account of accounts) {
     "42501",
     "Client was able to change authorization",
   );
-  await client.auth.signOut();
+  for (const table of [
+    "contacts",
+    "contactability",
+    "campaigns",
+    "import_runs",
+    "import_issues",
+    "imported_events",
+    "historical_sends",
+  ]) {
+    const crossBrand = await client
+      .from(table)
+      .select("brand_id")
+      .neq("brand_id", account.brand_id)
+      .limit(1);
+    assert.equal(crossBrand.error, null, `${table} read failed`);
+    assert.deepEqual(crossBrand.data, [], `${table} leaked another brand`);
+  }
+  const search = await client.rpc("search_contacts", {
+    p_query: "",
+    p_page: 1,
+  });
+  assert.equal(search.error, null, "Search RPC failed");
+  assert.ok(search.data.rows.length <= 50, "Search returned unbounded rows");
+  const importer = await client.rpc("ingest_contacts", {
+    p_brand_id: account.brand_id,
+    p_rows: [],
+  });
+  assert.equal(
+    importer.error?.code,
+    "42501",
+    "User can call privileged importer",
+  );
+  await client.auth.signOut({ scope: "local" });
 }
 const anonymous = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,

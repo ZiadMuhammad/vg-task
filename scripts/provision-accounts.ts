@@ -55,17 +55,15 @@ for (const brand of brands) {
         mode: 0o600,
       });
     }
-    const { error } = await supabase
-      .from("memberships")
-      .upsert(
-        {
-          user_id: account.id,
-          brand_id: brand.id,
-          role,
-          display_name: `${brand.name} ${role === "owner" ? "Owner" : "Analyst"}`,
-        },
-        { onConflict: "user_id" },
-      );
+    const { error } = await supabase.from("memberships").upsert(
+      {
+        user_id: account.id,
+        brand_id: brand.id,
+        role,
+        display_name: `${brand.name} ${role === "owner" ? "Owner" : "Analyst"}`,
+      },
+      { onConflict: "user_id" },
+    );
     if (error) throw new Error(error.message);
   }
 }

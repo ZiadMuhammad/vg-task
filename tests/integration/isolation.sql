@@ -46,6 +46,10 @@ select set_config('request.jwt.claims','{"sub":"00000000-0000-4000-8000-00000000
 do $$ begin
   assert (select count(*) from public.brands) = 0, 'Unassigned user acquired brand access';
   assert (select count(*) from public.memberships) = 0, 'Unassigned user can read memberships';
+  begin
+    perform private.require_owner('11111111-1111-4111-8111-111111111111');
+    raise exception 'User metadata granted owner access to an unassigned user';
+  exception when insufficient_privilege then null; end;
 end $$;
 
 reset role;
@@ -54,6 +58,14 @@ do $$ begin
     select 1 from pg_class c join pg_namespace n on n.oid = c.relnamespace
     where n.nspname = 'public' and c.relkind = 'r' and not c.relrowsecurity
   ), 'An exposed table has no RLS';
+  assert not exists (
+    select 1 from pg_class c join pg_namespace n on n.oid=c.relnamespace
+    where n.nspname='public' and c.relkind='v' and not coalesce(c.reloptions @> array['security_invoker=true'],false)
+  ), 'A public view bypasses RLS';
+  assert not exists (
+    select 1 from pg_proc p join pg_namespace n on n.oid=p.pronamespace
+    where n.nspname='public' and p.prosecdef
+  ), 'Privileged function exposed in public schema';
   assert not has_table_privilege('anon','public.brands','SELECT'), 'Anonymous brand access granted';
   assert not has_table_privilege('anon','public.memberships','SELECT'), 'Anonymous membership access granted';
 end $$;

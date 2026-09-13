@@ -37,7 +37,7 @@ Supabase project: `ebdtyruhetdtqidukyyy`. Repository: `ZiadMuhammad/vg-task`.
 - Campaign audience is currently eligible contacts matching channel and optional target country. This assumption is shown in the app.
 - Daily signup charts use UTC and the actual rolling last 30 calendar days, including today.
 - Imported reported campaign totals remain separate from observed raw engagement. Raw events are not assumed to prove historical delivery totals.
-- Missing references and inconsistent event channels are quarantined with reasons.
+- Events with missing customer references are rejected. Missing campaign references or inconsistent channels are retained with attribution warnings and excluded from campaign metrics; known adverse customer events still suppress sending.
 - September delta supersedes baseline contact attributes, but cannot erase an adverse engagement event.
 - A campaign can have one live approved dispatch in this assessment; duplicate confirmations return that operation. Historical imported sends are preserved separately.
 - Provider documentation is a starting contract; the brief's messy/out-of-order reports govern tests.
@@ -52,3 +52,5 @@ Google OAuth account mapping and provider configuration are deliberately last. D
 
 - Milestone 1: lint, type checking and production build passed; foundation pushed to the requested repository.
 - Milestone 2: six password users passed direct Supabase REST checks; transactional SQL checks passed on the dedicated hosted project. Disabling brand RLS made the same isolation assertion fail, and rollback restored the policy. Lint, type checking and production build passed. Local Docker was unavailable because the Mac ran out of disk space; CI runs the local database suite. Supabase advisors found no schema security findings; leaked-password protection is disabled in project Auth settings. Google remains deferred.
+
+- Milestone 3: all 11 supplied files imported. Counts are Kilele 82,509 customers / 44 campaigns / 303,588 unique events; Karoo 12,406 / 19 / 69,100; Marrakech 918 / 6 / 940. Full archive replay preserved all counts and customer-data digests. Direct REST checks passed for all six users, including tables, contactability view and search RPC. Import regression SQL verified delta precedence, replay identity, cross-brand foreign keys, and persistent opt-outs. Customer/import pages passed desktop and 390-pixel browser checks without document overflow or browser errors.

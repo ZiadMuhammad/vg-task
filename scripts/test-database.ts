@@ -1,5 +1,5 @@
 import postgres from "postgres";
-import { readFile } from "node:fs/promises";
+import { readFile, readdir } from "node:fs/promises";
 
 const url =
   process.env.TEST_DATABASE_URL ??
@@ -11,7 +11,12 @@ if (!["localhost", "127.0.0.1"].includes(new URL(url).hostname))
 const sql = postgres(url, { max: 1, onnotice: () => {} });
 try {
   const source = await readFile("tests/integration/isolation.sql", "utf8");
-  await sql.unsafe(source);
+  for (const file of (await readdir("tests/integration"))
+    .filter((file) => file.endsWith(".sql"))
+    .sort()) {
+    await sql.unsafe(await readFile(`tests/integration/${file}`, "utf8"));
+    console.log(`${file}: passed`);
+  }
   console.log("Database authorization assertions passed.");
   // A real mutation check proves the assertions detect the missing boundary.
   const mutated = source.replace(

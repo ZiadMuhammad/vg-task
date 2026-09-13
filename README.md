@@ -34,3 +34,17 @@ Identity is resolved from `public.memberships`, never user-editable metadata. Ea
 - `pnpm test:access` signs in as all six accounts and checks the actual Supabase REST API.
 - `pnpm test:db` runs transactional SQL against local Supabase, then disables RLS inside a rolled-back transaction and proves the same test catches the breach. CI runs this on a fresh migrated database.
 - `schema.sql` contains the ordered migration history. Apply migrations in `supabase/migrations` when provisioning another project.
+
+## Importing the supplied exports
+
+Extract the provided archive into ignored `.data/`, then run `pnpm data:import`. The importer trusts its fixed filename-to-brand mapping and rejects rows whose brand field disagrees. It supports the CP1252 Karoo export, semicolon-delimited Marrakech exports, and the September Kilele delta. Run `pnpm data:import -- --force` to deliberately replay completed files; normal reruns skip completed file hashes. `--brand=kilele` selects one brand.
+
+Each file is journaled in `import_runs`. `import_issues` records line numbers, original values, and explanations. Embedded NUL characters are displayed as escaped text in rejected records. A failed batch leaves a visible failed run, and rerunning safely resumes by upserting stable identities. Imports are an administrative CLI operation; the portal lets both assigned roles inspect their own reports.
+
+- Customer identity is the brand plus external ID. Duplicate destinations do not merge distinct customers.
+- Within one export, later duplicate attributes win, while restrictive consent, status, deletion and suppression survive. Delta attributes supersede baseline attributes regardless of replay order.
+- Invalid destinations become null with warnings; unknown consent means no permission. Invalid suppression dates reject the row. Date-only signup values use midnight UTC, while invalid signup values remain unknown.
+- Engagement opt-outs survive all imports. Unsubscribe/complaint blocks both channels; bounce blocks the event's channel. An unattributed adverse event still protects its known customer.
+- Historical campaign counts retain their source meaning. Reported opens may repeat and are not assumed to be unique recipients. Spend is stored in integer minor units; the source does not specify a currency.
+
+The source archive and generated account credentials are intentionally excluded from Git.

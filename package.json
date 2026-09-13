@@ -8,14 +8,15 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "next typegen && tsc --noEmit",
-    "test": "vitest run --passWithNoTests",
+    "test": "vitest run",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "db:start": "supabase start",
     "db:stop": "supabase stop",
     "test:db": "tsx scripts/test-database.ts",
     "test:access": "node --env-file=.env.local --import tsx scripts/test-rest-access.ts",
-    "accounts:provision": "node --env-file=.env.local --import tsx scripts/provision-accounts.ts"
+    "accounts:provision": "node --env-file=.env.local --import tsx scripts/provision-accounts.ts",
+    "data:import": "node --env-file=.env.local --import tsx scripts/import-seed.ts"
   },
   "dependencies": {
     "@radix-ui/react-slot": "1.3.3",
