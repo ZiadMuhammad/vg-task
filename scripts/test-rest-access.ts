@@ -44,6 +44,7 @@ for (const account of accounts) {
     "contacts",
     "contactability",
     "campaigns",
+    "campaign_metrics",
     "import_runs",
     "import_issues",
     "imported_events",
@@ -63,6 +64,19 @@ for (const account of accounts) {
   });
   assert.equal(search.error, null, "Search RPC failed");
   assert.ok(search.data.rows.length <= 50, "Search returned unbounded rows");
+  const summary = await client.rpc("dashboard_summary");
+  assert.equal(summary.error, null, "Dashboard RPC failed");
+  const ownCustomers = await client
+    .from("contacts")
+    .select("id", { count: "exact", head: true })
+    .is("deleted_at", null);
+  assert.equal(ownCustomers.error, null);
+  assert.equal(
+    summary.data.totals.customers,
+    ownCustomers.count,
+    "Dashboard returned another brand's total",
+  );
+  assert.equal(summary.data.signups.length, 30, "Dashboard omitted UTC days");
   const importer = await client.rpc("ingest_contacts", {
     p_brand_id: account.brand_id,
     p_rows: [],

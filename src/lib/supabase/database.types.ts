@@ -3,10 +3,9 @@ export type Json =
   | number
   | boolean
   | null
-  | {
-      [key: string]: Json | undefined;
-    }
+  | { [key: string]: Json | undefined }
   | Json[];
+
 export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
@@ -465,6 +464,49 @@ export type Database = {
       };
     };
     Views: {
+      campaign_metrics: {
+        Row: {
+          brand_id: string | null;
+          channel: string | null;
+          external_id: string | null;
+          id: string | null;
+          import_run_id: string | null;
+          name: string | null;
+          observed_events: number | null;
+          observed_unique_bounces: number | null;
+          observed_unique_clicks: number | null;
+          observed_unique_complaints: number | null;
+          observed_unique_opens: number | null;
+          observed_unique_unsubscribes: number | null;
+          parent_external_id: string | null;
+          reported_bounced: number | null;
+          reported_clicks: number | null;
+          reported_delivered: number | null;
+          reported_opens: number | null;
+          reported_sent: number | null;
+          sent_at: string | null;
+          source_local_time: string | null;
+          spend_minor: number | null;
+          target_country: string | null;
+          unattributed_events: number | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "campaigns_brand_id_fkey";
+            columns: ["brand_id"];
+            isOneToOne: false;
+            referencedRelation: "brands";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "campaigns_brand_id_import_run_id_fkey";
+            columns: ["brand_id", "import_run_id"];
+            isOneToOne: false;
+            referencedRelation: "import_runs";
+            referencedColumns: ["brand_id", "id"];
+          },
+        ];
+      };
       contactability: {
         Row: {
           brand_id: string | null;
@@ -554,18 +596,13 @@ export type Database = {
       };
     };
     Functions: {
+      dashboard_summary: { Args: never; Returns: Json };
       ingest_contacts: {
-        Args: {
-          p_brand_id: string;
-          p_rows: Json;
-        };
+        Args: { p_brand_id: string; p_rows: Json };
         Returns: number;
       };
       reconcile_import_page: {
-        Args: {
-          p_after?: string;
-          p_brand_id: string;
-        };
+        Args: { p_after?: string; p_brand_id: string };
         Returns: Json;
       };
       search_contacts: {
@@ -586,17 +623,18 @@ export type Database = {
     };
   };
 };
+
 type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">;
+
 type DefaultSchema = DatabaseWithoutInternals[Extract<
   keyof Database,
   "public"
 >];
+
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
-    | {
-        schema: keyof DatabaseWithoutInternals;
-      },
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals;
   }
@@ -621,12 +659,10 @@ export type Tables<
       ? R
       : never
     : never;
+
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
-    | {
-        schema: keyof DatabaseWithoutInternals;
-      },
+    keyof DefaultSchema["Tables"] | { schema: keyof DatabaseWithoutInternals },
   TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals;
   }
@@ -647,12 +683,10 @@ export type TablesInsert<
       ? I
       : never
     : never;
+
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
-    | {
-        schema: keyof DatabaseWithoutInternals;
-      },
+    keyof DefaultSchema["Tables"] | { schema: keyof DatabaseWithoutInternals },
   TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals;
   }
@@ -673,12 +707,10 @@ export type TablesUpdate<
       ? U
       : never
     : never;
+
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
-    | keyof DefaultSchema["Enums"]
-    | {
-        schema: keyof DatabaseWithoutInternals;
-      },
+    keyof DefaultSchema["Enums"] | { schema: keyof DatabaseWithoutInternals },
   EnumName extends (DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals;
   }
@@ -691,12 +723,11 @@ export type Enums<
   : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
     ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
     : never;
+
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
-    | {
-        schema: keyof DatabaseWithoutInternals;
-      },
+    | { schema: keyof DatabaseWithoutInternals },
   CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals;
   }
@@ -709,6 +740,7 @@ export type CompositeTypes<
   : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
     ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
     : never;
+
 export const Constants = {
   public: {
     Enums: {},

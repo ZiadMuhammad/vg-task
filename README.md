@@ -48,3 +48,16 @@ Each file is journaled in `import_runs`. `import_issues` records line numbers, o
 - Historical campaign counts retain their source meaning. Reported opens may repeat and are not assumed to be unique recipients. Spend is stored in integer minor units; the source does not specify a currency.
 
 The source archive and generated account credentials are intentionally excluded from Git.
+
+## Metric definitions
+
+| Metric                   | Definition                                                                                                                                                                      |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Total customers          | Unique brand/customer IDs excluding records with `deleted_at`. The customer list retains those deleted records for inspection.                                                  |
+| Contactable customers    | Current active customers with explicit consent and at least one valid, unsuppressed email/SMS destination. A customer eligible for both channels counts once.                   |
+| Daily signups            | Current non-deleted customer records, grouped by their signup date in UTC, across the last 30 calendar days including today. Missing dates are excluded and counted separately. |
+| Historical delivery rate | Source-reported delivered divided by source-reported sent. A zero denominator displays a dash; inconsistent percentages are not clamped.                                        |
+| Observed engagement      | Distinct customer IDs per campaign and event type, only for valid campaign/channel attribution. Repeated opens from one customer count once.                                    |
+| Spend                    | Source amount in integer minor units, displayed without an assumed currency.                                                                                                    |
+
+Reported counts and raw-event counts have different coverage and are never added together. SMS opens are not presented as email-open metrics. The dashboard marks incomplete imports explicitly. Database aggregation and server pagination keep full customer/event datasets out of the browser.
