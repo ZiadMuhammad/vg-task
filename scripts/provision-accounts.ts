@@ -38,7 +38,10 @@ await mkdir(".local", { recursive: true });
 for (const brand of brands) {
   for (const role of ["owner", "analyst"]) {
     const email = `${brand.slug}.${role}@demo.velocity.example`;
-    let account = accounts.find((entry) => entry.email === email);
+    // Google setup may replace a demo email without changing its membership.
+    let account = accounts.find(
+      (entry) => entry.brand_id === brand.id && entry.role === role,
+    );
     if (!account) {
       const password = randomBytes(24).toString("base64url");
       const { data, error } = await supabase.auth.admin.createUser({

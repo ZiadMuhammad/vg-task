@@ -2,9 +2,11 @@
 
 A private campaign workspace for Kilele Rides, Karoo Coaches, and Marrakech Express. Built for the Velocity Growth engineering assessment.
 
+[Open the live portal](https://vg-task.vercel.app). The six password accounts are supplied privately. Google OAuth is the remaining setup step; its integration is implemented but disabled until provider configuration and a real login are verified.
+
 ## Stack
 
-Next.js App Router, React, strict TypeScript, Tailwind CSS, shadcn UI components, Supabase Auth/Postgres/RLS, Queues, scheduled Edge Functions, Zod, and Recharts. Tests use Vitest, Playwright, and a real local Supabase database.
+Next.js App Router, React, strict TypeScript, Tailwind CSS, shared Radix-based UI primitives, Supabase Auth/Postgres/RLS, Queues, scheduled Edge Functions, Zod, and Recharts. Vitest covers business rules; SQL and concurrent-connection tests run against real Supabase in CI. Browser flows were verified with Codex browser automation on desktop and at 390-pixel width.
 
 ## Development
 
@@ -18,11 +20,13 @@ Never put a provider or service-role key in `NEXT_PUBLIC_` variables. Input data
 - `pnpm typecheck`: strict TypeScript
 - `pnpm test`: business-rule tests
 - `pnpm build`: production compilation
-- Database and browser test commands are added with their implementation milestones.
+- `pnpm test:access`: six-account tests against the configured project's real REST API
+- `pnpm test:db`: transactional SQL, permission mutation tests, and concurrent confirmation against local Supabase
+- `pnpm format:check`: consistent source formatting
 
 ## Project decisions
 
-See [delivery plan](docs/plan.md) for scope, acceptance criteria, and explicit business assumptions. The application is being delivered in six separately committed milestones.
+See the [delivery plan](docs/plan.md) for milestone evidence and explicit business assumptions, and the [walkthrough](docs/walkthrough.md) for the demo route and code entry points.
 
 AI assistance: OpenAI Codex was used for planning, implementation, testing, review, and documentation. The implementation's guarantees are exercised by executable tests.
 
@@ -72,6 +76,37 @@ Confirmation locks the campaign and enqueues one approved dispatch, even across 
 
 The observed provider uses smaller event pages than advertised and can report an empty, non-advancing cursor while claiming more results. This is recorded as a synchronization error and retried. Scans restart at least every five minutes, including stalled scans, so late/backfilled events are revisited. Provider event types are counted as unique saved recipients; types can overlap and opens are not assumed to prove delivery.
 
-Deploy the function with `pnpm supabase functions deploy campaign-worker --project-ref <ref> --use-api`. Install `VG_PROVIDER_API_KEY` and `WORKER_SECRET` using Supabase secrets. Add the project URL and the same worker secret to Vault as `vg_project_url` and `vg_worker_secret`, then run `scripts/schedule-worker.sql` to schedule the worker every minute. The repository contains no secret values. Inspect Cron job runs and `net._http_response` for scheduler failures; each batch shows its last synchronization/error in the portal.
+Deploy the function with `pnpm supabase functions deploy campaign-worker --project-ref <ref> --no-verify-jwt --use-api --import-map supabase/functions/campaign-worker/deno.json`. Gateway JWT verification is disabled because the function verifies its own worker secret. Install `VG_PROVIDER_API_KEY` and `WORKER_SECRET` using Supabase secrets. Add the project URL and the same worker secret to Vault as `vg_project_url` and `vg_worker_secret`, then run `scripts/schedule-worker.sql` to schedule the worker every minute. Inspect Cron job runs and `net._http_response` for scheduler failures; each batch shows its last synchronization/error in the portal. Temporary database interruptions leave durable work available for the next run.
 
 Validation includes transactional database tests for approval count, destination deduplication, immutable history, duplicate confirmation, stale leases, identical retry requests, post-approval withholding, duplicate/out-of-order events and unknown-recipient quarantine. A live Marrakech send was confirmed concurrently by two independent owner sessions and produced one 263-recipient approval with three batches. The real provider accepted all 263; subsequent delivery, bounce, open and unsubscribe events were reconciled. CI runs local Supabase tests without requiring Docker on the development Mac.
+
+A second live Marrakech SMS dispatch approved and submitted 262 destinations in three batches. Replaying an email batch with its stored payload and idempotency key returned the original provider batch. SMS open observations are not presented as meaningful open metrics.
+
+## Password-protected reports
+
+Owners publish one report per campaign with an unguessable UUID and a password of at least 12 characters (at most 64 UTF-8 bytes). PostgreSQL stores only a bcrypt hash in a private schema. A server action verifies the password and issues an HMAC-signed, HttpOnly, route-scoped session lasting one hour. Rotation and revocation increment the report version, immediately invalidating old sessions. Verification attempts have 15-minute limits per IP, report, and IP/report pair; IPs are HMAC-hashed before storage. Deploy behind a trusted proxy that overwrites `x-forwarded-for`, as Vercel does.
+
+The shared route sits outside the portal layout and receives a strict aggregate-only DTO. It exposes no customer fields, account navigation, provider payloads, or other campaigns. `read_shared_report` and `verify_report_password` accept only the service role; anonymous and signed-in portal clients cannot execute them directly. Public/private function grants are explicitly restricted, and global default privileges close newly created functions until granted. Regression tests inspect EXECUTE itself and prove that granting the report reader to portal users makes the test fail.
+
+## Deployed database and keys
+
+Project URL: `https://ebdtyruhetdtqidukyyy.supabase.co`. The anon key and six account credentials are in the private submission handoff.
+
+| Surface                 | Names                                                                                                                                                                                                        |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Identity                | `brands`, `memberships`                                                                                                                                                                                      |
+| Imports and source data | `contacts`, `campaigns`, `import_runs`, `import_issues`, `imported_events`, `historical_sends`                                                                                                               |
+| Live dispatch           | `campaign_approvals`, `approved_recipients`, `provider_batches`, `provider_events`, `provider_event_issues`                                                                                                  |
+| Reports                 | `shared_reports`; private `report_credentials` and `report_attempts`                                                                                                                                         |
+| Read views              | `contactability`, `campaign_metrics`, `dispatch_metrics`                                                                                                                                                     |
+| Portal RPCs             | `search_contacts`, `dashboard_summary`, `prepare_campaign`, `confirm_campaign`, `retry_campaign`, `publish_report`, `revoke_report`                                                                          |
+| Service RPCs            | `ingest_contacts`, `reconcile_import_page`, `claim_dispatch`, `finish_dispatch`, `fail_dispatch`, `claim_event_poll`, `finish_event_poll`, `fail_event_poll`, `verify_report_password`, `read_shared_report` |
+| Background runtime      | Edge Function `campaign-worker`, Cron job `vg-campaign-worker`, PGMQ queue `campaign_dispatch`, private `batch_work`                                                                                         |
+
+Browser and portal server rendering use the anon key plus the user's JWT. The report server uses the service-role key only for its two narrow report RPCs. The Edge worker uses the service-role key for worker RPCs and the issued provider key for every provider request. The worker secret protects scheduler invocation; a separate server secret signs report sessions. Private tables and queue payloads are not exposed through the Data API.
+
+Vercel hosts the web app. Set its production variables from `.env.example` and set `NEXT_PUBLIC_SITE_URL` to the live origin. `.vercelignore` excludes credentials, local data, and build artifacts from uploads; `.gitignore` independently excludes them from source control.
+
+## Final Google setup
+
+Create a Google web OAuth client with origin `https://vg-task.vercel.app` and redirect URI `https://ebdtyruhetdtqidukyyy.supabase.co/auth/v1/callback`. Configure that client in Supabase's Google provider using only basic identity scopes. Map the intended Google email to the existing Kilele owner UUID, preserving its password and membership. Add the live `/auth/callback` URL to Supabase's redirect allowlist, enable `GOOGLE_AUTH_ENABLED=true` in Vercel, and redeploy. Verify Google login and password login resolve to that same membership. Unknown Google identities must still have no brand access. Do not claim this step complete until the live check succeeds.

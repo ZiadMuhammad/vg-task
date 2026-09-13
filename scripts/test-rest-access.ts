@@ -55,6 +55,7 @@ for (const account of accounts) {
     "provider_events",
     "provider_event_issues",
     "dispatch_metrics",
+    "shared_reports",
   ]) {
     const crossBrand = await client
       .from(table)
@@ -92,6 +93,15 @@ for (const account of accounts) {
     "42501",
     "User can call privileged importer",
   );
+  const reportAccess = await client.rpc("read_shared_report", {
+    p_report_id: "ffffffff-ffff-4fff-8fff-ffffffffffff",
+    p_version: 1,
+  });
+  assert.equal(
+    reportAccess.error?.code,
+    "42501",
+    "Portal user invoked privileged shared-report reader",
+  );
   const worker = await client.rpc("claim_dispatch");
   assert.equal(
     worker.error?.code,
@@ -116,6 +126,15 @@ const anonymous = createClient(
 );
 const read = await anonymous.from("brands").select("*");
 assert.equal(read.error?.code, "42501", "Anonymous table access granted");
+const anonymousReport = await anonymous.rpc("read_shared_report", {
+  p_report_id: "ffffffff-ffff-4fff-8fff-ffffffffffff",
+  p_version: 1,
+});
+assert.equal(
+  anonymousReport.error?.code,
+  "42501",
+  "Anonymous report RPC access granted",
+);
 console.log(
   "All six password accounts passed direct REST brand, membership, and write-denial checks. Anonymous reads denied.",
 );

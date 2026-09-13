@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ReportSharing } from "@/components/report-sharing";
 import { PrepareSend } from "@/components/campaign-actions";
 import { DispatchSummary } from "@/components/dispatch-summary";
 import { dispatchSchema } from "@/lib/campaigns/dispatch";
@@ -49,6 +50,12 @@ export default async function CampaignDetailPage({
     .not("approved_at", "is", null)
     .maybeSingle();
   if (liveError) throw new Error("Live dispatch unavailable");
+  const { data: report, error: reportError } = await supabase
+    .from("shared_reports")
+    .select("id,active")
+    .eq("campaign_id", id)
+    .maybeSingle();
+  if (reportError) throw new Error("Report sharing unavailable");
   return (
     <>
       <Link
@@ -248,6 +255,9 @@ export default async function CampaignDetailPage({
           </p>
         )}
       </section>
+      {membership.role === "owner" && (
+        <ReportSharing campaignId={id} report={report} />
+      )}
       <div className="mt-6 flex gap-2 text-xs leading-6 text-slate-500">
         <Info className="mt-1 size-4 shrink-0" />
         <p>

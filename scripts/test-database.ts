@@ -11,7 +11,6 @@ if (!["localhost", "127.0.0.1"].includes(new URL(url).hostname))
   );
 const sql = postgres(url, { max: 1, onnotice: () => {} });
 try {
-  const source = await readFile("tests/integration/isolation.sql", "utf8");
   for (const file of (await readdir("tests/integration"))
     .filter((file) => file.endsWith(".sql"))
     .sort()) {
@@ -19,22 +18,34 @@ try {
     console.log(`${file}: passed`);
   }
   console.log("Database authorization assertions passed.");
-  // A real mutation check proves the assertions detect the missing boundary.
-  const mutated = source.replace(
-    "begin;",
-    "begin;\nalter table public.brands disable row level security;",
-  );
-  let detected = false;
-  try {
-    await sql.unsafe(mutated);
-  } catch (error) {
-    detected =
-      error instanceof Error && error.message.includes("RLS isolation broken");
-  } finally {
-    await sql.unsafe("rollback");
+  // Prove the same assertions detect an actual removal of each boundary.
+  for (const mutation of [
+    {
+      file: "isolation.sql",
+      change: "alter table public.brands disable row level security;",
+      expected: "RLS isolation broken",
+    },
+    {
+      file: "function-permissions.sql",
+      change:
+        "grant execute on function public.read_shared_report(uuid,integer) to authenticated;",
+      expected: "Server-only function execution granted",
+    },
+  ]) {
+    const source = await readFile(`tests/integration/${mutation.file}`, "utf8");
+    let detected = false;
+    try {
+      await sql.unsafe(source.replace("begin;", `begin;\n${mutation.change}`));
+    } catch (error) {
+      detected =
+        error instanceof Error && error.message.includes(mutation.expected);
+    } finally {
+      await sql.unsafe("rollback");
+    }
+    if (!detected)
+      throw new Error(`${mutation.file} did not detect the removed boundary.`);
+    console.log(`${mutation.file}: removed boundary detected.`);
   }
-  if (!detected) throw new Error("Isolation test did not detect disabled RLS.");
-  console.log("Disabling RLS was detected by the same test.");
 } finally {
   await sql.end();
 }

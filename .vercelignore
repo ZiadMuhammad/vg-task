@@ -1,0 +1,15 @@
+.git
+.next
+node_modules
+.env*
+.local
+.data
+.agents
+.codex
+.firecrawl
+supabase/.temp
+supabase/.branches
+test-results
+playwright-report
+coverage
+*.tsbuildinfo

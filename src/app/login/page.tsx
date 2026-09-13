@@ -1,5 +1,6 @@
 import { Activity, ShieldCheck } from "lucide-react";
 import { LoginForm } from "./login-form";
+import { GoogleButton } from "./google-button";
 
 export default async function LoginPage({
   searchParams,
@@ -54,6 +55,7 @@ export default async function LoginPage({
             </p>
           )}
           <LoginForm />
+          {process.env.GOOGLE_AUTH_ENABLED === "true" && <GoogleButton />}
           <p className="mt-7 text-center text-xs leading-5 text-slate-400">
             Access is by invitation. Need help? Contact your workspace
             administrator.

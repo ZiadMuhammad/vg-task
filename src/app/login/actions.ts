@@ -43,3 +43,24 @@ export async function signOut() {
   await supabase.auth.signOut({ scope: "local" });
   redirect("/login");
 }
+
+export async function googleLogin(): Promise<LoginState> {
+  if (process.env.GOOGLE_AUTH_ENABLED !== "true")
+    return {
+      error:
+        "Google sign-in is currently unavailable. Please use your password.",
+    };
+  const site = process.env.NEXT_PUBLIC_SITE_URL;
+  if (!site) return { error: "Google sign-in is temporarily unavailable." };
+  const supabase = await createClient();
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo: new URL("/auth/callback", site).toString(),
+      queryParams: { prompt: "select_account" },
+    },
+  });
+  if (error || !data.url)
+    return { error: "We couldn’t start Google sign-in. Please try again." };
+  redirect(data.url);
+}

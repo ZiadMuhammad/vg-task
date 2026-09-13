@@ -129,9 +129,11 @@ Deno.serve(async (request) => {
       }
     }
     return Response.json({ sends, polls });
-  } catch {
+  } catch (error) {
     console.error(
       "Campaign worker could not complete its database operation; leases will expire.",
+      // rpc() includes only the operation name and database error code.
+      error instanceof Error ? error.message : "Unknown database failure",
     );
     return Response.json(
       { error: "Worker interrupted; durable work remains queued" },

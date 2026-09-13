@@ -742,6 +742,51 @@ export type Database = {
           },
         ];
       };
+      shared_reports: {
+        Row: {
+          active: boolean;
+          brand_id: string;
+          campaign_id: string;
+          id: string;
+          published_at: string;
+          published_by: string;
+          version: number;
+        };
+        Insert: {
+          active?: boolean;
+          brand_id: string;
+          campaign_id: string;
+          id?: string;
+          published_at?: string;
+          published_by: string;
+          version?: number;
+        };
+        Update: {
+          active?: boolean;
+          brand_id?: string;
+          campaign_id?: string;
+          id?: string;
+          published_at?: string;
+          published_by?: string;
+          version?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "shared_reports_brand_id_campaign_id_fkey";
+            columns: ["brand_id", "campaign_id"];
+            isOneToOne: true;
+            referencedRelation: "campaign_metrics";
+            referencedColumns: ["brand_id", "id"];
+          },
+          {
+            foreignKeyName: "shared_reports_brand_id_campaign_id_fkey";
+            columns: ["brand_id", "campaign_id"];
+            isOneToOne: true;
+            referencedRelation: "campaigns";
+            referencedColumns: ["brand_id", "id"];
+          },
+        ];
+      };
     };
     Views: {
       campaign_metrics: {
@@ -975,17 +1020,34 @@ export type Database = {
         Args: { p_campaign_id: string; p_refresh?: boolean };
         Returns: string;
       };
+      publish_report: {
+        Args: { p_campaign_id: string; p_password: string };
+        Returns: string;
+      };
+      read_shared_report: {
+        Args: { p_report_id: string; p_version: number };
+        Returns: Json;
+      };
       reconcile_import_page: {
         Args: { p_after?: string; p_brand_id: string };
         Returns: Json;
       };
       retry_campaign: { Args: { p_approval_id: string }; Returns: undefined };
+      revoke_report: { Args: { p_report_id: string }; Returns: undefined };
       search_contacts: {
         Args: {
           p_country?: string;
           p_eligibility?: string;
           p_page?: number;
           p_query?: string;
+        };
+        Returns: Json;
+      };
+      verify_report_password: {
+        Args: {
+          p_attempt_key: string;
+          p_password: string;
+          p_report_id: string;
         };
         Returns: Json;
       };

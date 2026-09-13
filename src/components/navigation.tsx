@@ -17,7 +17,7 @@ export function Navigation() {
   return (
     <nav
       aria-label="Main navigation"
-      className="flex gap-1 overflow-x-auto lg:flex-col"
+      className="grid grid-cols-2 gap-1 sm:grid-cols-4 lg:grid-cols-1"
     >
       {items.map(({ href, label, icon: Icon }) => (
         <Link
@@ -25,7 +25,7 @@ export function Navigation() {
           href={href}
           aria-current={pathname.startsWith(href) ? "page" : undefined}
           className={cn(
-            "flex shrink-0 items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-slate-400 hover:bg-white/5 hover:text-white",
+            "flex items-center gap-2 rounded-lg px-3 py-3 text-sm font-medium text-slate-400 hover:bg-white/5 hover:text-white sm:gap-3",
             pathname.startsWith(href) && "bg-white/10 text-white",
           )}
         >
