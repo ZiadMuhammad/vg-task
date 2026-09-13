@@ -1,4 +1,5 @@
 import postgres from "postgres";
+import { testConcurrentApproval } from "./test-concurrency";
 import { readFile, readdir } from "node:fs/promises";
 
 const url =
@@ -37,3 +38,5 @@ try {
 } finally {
   await sql.end();
 }
+
+await testConcurrentApproval(url);

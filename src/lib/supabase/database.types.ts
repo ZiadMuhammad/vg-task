@@ -14,6 +14,89 @@ export type Database = {
   };
   public: {
     Tables: {
+      approved_recipients: {
+        Row: {
+          approval_id: string;
+          batch_number: number;
+          bounced: boolean;
+          brand_id: string;
+          contact_id: string;
+          delivered: boolean;
+          destination: string;
+          external_id: string;
+          full_name: string;
+          id: string;
+          opened: boolean;
+          position: number;
+          submission_reason: string | null;
+          submission_status: string;
+          unsubscribed: boolean;
+        };
+        Insert: {
+          approval_id: string;
+          batch_number: number;
+          bounced?: boolean;
+          brand_id: string;
+          contact_id: string;
+          delivered?: boolean;
+          destination: string;
+          external_id: string;
+          full_name: string;
+          id?: string;
+          opened?: boolean;
+          position: number;
+          submission_reason?: string | null;
+          submission_status?: string;
+          unsubscribed?: boolean;
+        };
+        Update: {
+          approval_id?: string;
+          batch_number?: number;
+          bounced?: boolean;
+          brand_id?: string;
+          contact_id?: string;
+          delivered?: boolean;
+          destination?: string;
+          external_id?: string;
+          full_name?: string;
+          id?: string;
+          opened?: boolean;
+          position?: number;
+          submission_reason?: string | null;
+          submission_status?: string;
+          unsubscribed?: boolean;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "approved_recipients_brand_id_approval_id_fkey";
+            columns: ["brand_id", "approval_id"];
+            isOneToOne: false;
+            referencedRelation: "campaign_approvals";
+            referencedColumns: ["brand_id", "id"];
+          },
+          {
+            foreignKeyName: "approved_recipients_brand_id_approval_id_fkey";
+            columns: ["brand_id", "approval_id"];
+            isOneToOne: false;
+            referencedRelation: "dispatch_metrics";
+            referencedColumns: ["brand_id", "id"];
+          },
+          {
+            foreignKeyName: "approved_recipients_brand_id_contact_id_fkey";
+            columns: ["brand_id", "contact_id"];
+            isOneToOne: false;
+            referencedRelation: "contactability";
+            referencedColumns: ["brand_id", "id"];
+          },
+          {
+            foreignKeyName: "approved_recipients_brand_id_contact_id_fkey";
+            columns: ["brand_id", "contact_id"];
+            isOneToOne: false;
+            referencedRelation: "contacts";
+            referencedColumns: ["brand_id", "id"];
+          },
+        ];
+      };
       brands: {
         Row: {
           code: string;
@@ -40,6 +123,66 @@ export type Database = {
           timezone?: string;
         };
         Relationships: [];
+      };
+      campaign_approvals: {
+        Row: {
+          approved_at: string | null;
+          approved_by: string | null;
+          audience_hash: string;
+          brand_id: string;
+          campaign_id: string;
+          campaign_name: string;
+          channel: string;
+          expires_at: string;
+          id: string;
+          prepared_at: string;
+          recipient_count: number;
+          target_country: string | null;
+        };
+        Insert: {
+          approved_at?: string | null;
+          approved_by?: string | null;
+          audience_hash?: string;
+          brand_id: string;
+          campaign_id: string;
+          campaign_name: string;
+          channel: string;
+          expires_at?: string;
+          id?: string;
+          prepared_at?: string;
+          recipient_count?: number;
+          target_country?: string | null;
+        };
+        Update: {
+          approved_at?: string | null;
+          approved_by?: string | null;
+          audience_hash?: string;
+          brand_id?: string;
+          campaign_id?: string;
+          campaign_name?: string;
+          channel?: string;
+          expires_at?: string;
+          id?: string;
+          prepared_at?: string;
+          recipient_count?: number;
+          target_country?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "campaign_approvals_brand_id_campaign_id_fkey";
+            columns: ["brand_id", "campaign_id"];
+            isOneToOne: false;
+            referencedRelation: "campaign_metrics";
+            referencedColumns: ["brand_id", "id"];
+          },
+          {
+            foreignKeyName: "campaign_approvals_brand_id_campaign_id_fkey";
+            columns: ["brand_id", "campaign_id"];
+            isOneToOne: false;
+            referencedRelation: "campaigns";
+            referencedColumns: ["brand_id", "id"];
+          },
+        ];
       };
       campaigns: {
         Row: {
@@ -462,6 +605,143 @@ export type Database = {
           },
         ];
       };
+      provider_batches: {
+        Row: {
+          approval_id: string;
+          attempts: number;
+          batch_number: number;
+          brand_id: string;
+          created_at: string;
+          id: string;
+          last_error: string | null;
+          last_synced_at: string | null;
+          next_attempt_at: string;
+          provider_batch_id: string | null;
+          status: string;
+        };
+        Insert: {
+          approval_id: string;
+          attempts?: number;
+          batch_number: number;
+          brand_id: string;
+          created_at?: string;
+          id?: string;
+          last_error?: string | null;
+          last_synced_at?: string | null;
+          next_attempt_at?: string;
+          provider_batch_id?: string | null;
+          status?: string;
+        };
+        Update: {
+          approval_id?: string;
+          attempts?: number;
+          batch_number?: number;
+          brand_id?: string;
+          created_at?: string;
+          id?: string;
+          last_error?: string | null;
+          last_synced_at?: string | null;
+          next_attempt_at?: string;
+          provider_batch_id?: string | null;
+          status?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "provider_batches_brand_id_approval_id_fkey";
+            columns: ["brand_id", "approval_id"];
+            isOneToOne: false;
+            referencedRelation: "campaign_approvals";
+            referencedColumns: ["brand_id", "id"];
+          },
+          {
+            foreignKeyName: "provider_batches_brand_id_approval_id_fkey";
+            columns: ["brand_id", "approval_id"];
+            isOneToOne: false;
+            referencedRelation: "dispatch_metrics";
+            referencedColumns: ["brand_id", "id"];
+          },
+        ];
+      };
+      provider_event_issues: {
+        Row: {
+          batch_id: string;
+          brand_id: string;
+          fingerprint: string;
+          first_seen_at: string;
+          id: number;
+          reason: string;
+        };
+        Insert: {
+          batch_id: string;
+          brand_id: string;
+          fingerprint: string;
+          first_seen_at?: string;
+          id?: never;
+          reason: string;
+        };
+        Update: {
+          batch_id?: string;
+          brand_id?: string;
+          fingerprint?: string;
+          first_seen_at?: string;
+          id?: never;
+          reason?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "provider_event_issues_brand_id_batch_id_fkey";
+            columns: ["brand_id", "batch_id"];
+            isOneToOne: false;
+            referencedRelation: "provider_batches";
+            referencedColumns: ["brand_id", "id"];
+          },
+        ];
+      };
+      provider_events: {
+        Row: {
+          batch_id: string;
+          brand_id: string;
+          event_id: string;
+          event_type: string;
+          occurred_at: string | null;
+          received_at: string;
+          recipient_id: string;
+        };
+        Insert: {
+          batch_id: string;
+          brand_id: string;
+          event_id: string;
+          event_type: string;
+          occurred_at?: string | null;
+          received_at?: string;
+          recipient_id: string;
+        };
+        Update: {
+          batch_id?: string;
+          brand_id?: string;
+          event_id?: string;
+          event_type?: string;
+          occurred_at?: string | null;
+          received_at?: string;
+          recipient_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "provider_events_brand_id_batch_id_fkey";
+            columns: ["brand_id", "batch_id"];
+            isOneToOne: false;
+            referencedRelation: "provider_batches";
+            referencedColumns: ["brand_id", "id"];
+          },
+          {
+            foreignKeyName: "provider_events_brand_id_recipient_id_fkey";
+            columns: ["brand_id", "recipient_id"];
+            isOneToOne: false;
+            referencedRelation: "approved_recipients";
+            referencedColumns: ["brand_id", "id"];
+          },
+        ];
+      };
     };
     Views: {
       campaign_metrics: {
@@ -594,17 +874,112 @@ export type Database = {
           },
         ];
       };
+      dispatch_metrics: {
+        Row: {
+          accepted: number | null;
+          approved_at: string | null;
+          approved_by: string | null;
+          attention_batches: number | null;
+          audience_hash: string | null;
+          bounced: number | null;
+          brand_id: string | null;
+          campaign_id: string | null;
+          campaign_name: string | null;
+          channel: string | null;
+          delivered: number | null;
+          expired: boolean | null;
+          expires_at: string | null;
+          id: string | null;
+          issue_count: number | null;
+          last_synced_at: string | null;
+          opened: number | null;
+          pending_batches: number | null;
+          prepared_at: string | null;
+          queued: number | null;
+          recipient_count: number | null;
+          rejected: number | null;
+          target_country: string | null;
+          unsubscribed: number | null;
+          withheld: number | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "campaign_approvals_brand_id_campaign_id_fkey";
+            columns: ["brand_id", "campaign_id"];
+            isOneToOne: false;
+            referencedRelation: "campaign_metrics";
+            referencedColumns: ["brand_id", "id"];
+          },
+          {
+            foreignKeyName: "campaign_approvals_brand_id_campaign_id_fkey";
+            columns: ["brand_id", "campaign_id"];
+            isOneToOne: false;
+            referencedRelation: "campaigns";
+            referencedColumns: ["brand_id", "id"];
+          },
+        ];
+      };
     };
     Functions: {
+      claim_dispatch: { Args: never; Returns: Json };
+      claim_event_poll: { Args: never; Returns: Json };
+      confirm_campaign: {
+        Args: { p_approval_id: string; p_count: number; p_hash: string };
+        Returns: string;
+      };
       dashboard_summary: { Args: never; Returns: Json };
+      fail_dispatch: {
+        Args: {
+          p_attention?: boolean;
+          p_batch_id: string;
+          p_delay: number;
+          p_reason: string;
+          p_token: string;
+        };
+        Returns: boolean;
+      };
+      fail_event_poll: {
+        Args: {
+          p_batch_id: string;
+          p_delay: number;
+          p_reason: string;
+          p_token: string;
+        };
+        Returns: undefined;
+      };
+      finish_dispatch: {
+        Args: {
+          p_batch_id: string;
+          p_provider_id: string;
+          p_results: Json;
+          p_token: string;
+        };
+        Returns: boolean;
+      };
+      finish_event_poll: {
+        Args: {
+          p_batch_id: string;
+          p_cursor: string;
+          p_events: Json;
+          p_issues: Json;
+          p_more: boolean;
+          p_token: string;
+        };
+        Returns: boolean;
+      };
       ingest_contacts: {
         Args: { p_brand_id: string; p_rows: Json };
         Returns: number;
+      };
+      prepare_campaign: {
+        Args: { p_campaign_id: string; p_refresh?: boolean };
+        Returns: string;
       };
       reconcile_import_page: {
         Args: { p_after?: string; p_brand_id: string };
         Returns: Json;
       };
+      retry_campaign: { Args: { p_approval_id: string }; Returns: undefined };
       search_contacts: {
         Args: {
           p_country?: string;

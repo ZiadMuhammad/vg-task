@@ -1,4 +1,7 @@
 import Link from "next/link";
+import { PrepareSend } from "@/components/campaign-actions";
+import { DispatchSummary } from "@/components/dispatch-summary";
+import { dispatchSchema } from "@/lib/campaigns/dispatch";
 import { notFound } from "next/navigation";
 import {
   CheckCheck,
@@ -24,7 +27,7 @@ export default async function CampaignDetailPage({
 }) {
   const { id } = await params;
   if (!z.uuid().safeParse(id).success) notFound();
-  const { supabase } = await requireMembership();
+  const { supabase, membership } = await requireMembership();
   const { data, error } = await supabase
     .from("campaign_metrics")
     .select("*")
@@ -39,6 +42,13 @@ export default async function CampaignDetailPage({
     .eq("campaign_id", id)
     .order("queued_at");
   if (logError) throw new Error("Historical send records unavailable");
+  const { data: live, error: liveError } = await supabase
+    .from("dispatch_metrics")
+    .select("*")
+    .eq("campaign_id", id)
+    .not("approved_at", "is", null)
+    .maybeSingle();
+  if (liveError) throw new Error("Live dispatch unavailable");
   return (
     <>
       <Link
@@ -56,6 +66,28 @@ export default async function CampaignDetailPage({
           {campaign.channel === "email" ? "Email campaign" : "SMS campaign"}
         </Badge>
       </PageHeading>
+      {live ? (
+        <DispatchSummary
+          dispatch={dispatchSchema.parse(live)}
+          owner={membership.role === "owner"}
+        />
+      ) : (
+        <section className="mb-7 flex flex-wrap items-center justify-between gap-5 rounded-xl border border-teal-200 bg-teal-50/40 p-6">
+          <div>
+            <h2 className="font-semibold">Send this campaign</h2>
+            <p className="mt-2 text-sm text-slate-500">
+              Review the exact saved audience before approving a new dispatch.
+            </p>
+          </div>
+          {membership.role === "owner" ? (
+            <PrepareSend campaignId={id} />
+          ) : (
+            <p className="text-sm text-slate-500">
+              Only your brand owner can send.
+            </p>
+          )}
+        </section>
+      )}
       <div className="mb-7 grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
         <MetricCard
           icon={Send}

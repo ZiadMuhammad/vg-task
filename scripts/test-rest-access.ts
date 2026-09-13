@@ -49,6 +49,12 @@ for (const account of accounts) {
     "import_issues",
     "imported_events",
     "historical_sends",
+    "campaign_approvals",
+    "approved_recipients",
+    "provider_batches",
+    "provider_events",
+    "provider_event_issues",
+    "dispatch_metrics",
   ]) {
     const crossBrand = await client
       .from(table)
@@ -85,6 +91,21 @@ for (const account of accounts) {
     importer.error?.code,
     "42501",
     "User can call privileged importer",
+  );
+  const worker = await client.rpc("claim_dispatch");
+  assert.equal(
+    worker.error?.code,
+    "42501",
+    "Portal user acquired worker access",
+  );
+  const approvalWrite = await client
+    .from("campaign_approvals")
+    .update({ recipient_count: 0 })
+    .eq("brand_id", account.brand_id);
+  assert.equal(
+    approvalWrite.error?.code,
+    "42501",
+    "Portal user directly rewrote an approval",
   );
   await client.auth.signOut({ scope: "local" });
 }

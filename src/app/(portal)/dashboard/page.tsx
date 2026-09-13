@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { dispatchSchema } from "@/lib/campaigns/dispatch";
+import { RefreshStatus } from "@/components/refresh-status";
 import {
   ArrowRight,
   ContactRound,
@@ -35,18 +37,25 @@ const summarySchema = z.object({
 });
 export default async function DashboardPage() {
   const { supabase, brand } = await requireMembership();
-  const [summaryResult, campaignResult] = await Promise.all([
+  const [summaryResult, campaignResult, dispatchResult] = await Promise.all([
     supabase.rpc("dashboard_summary"),
     supabase
       .from("campaign_metrics")
       .select("*")
       .order("sent_at", { ascending: false })
       .limit(5),
+    supabase
+      .from("dispatch_metrics")
+      .select("*")
+      .not("approved_at", "is", null)
+      .order("approved_at", { ascending: false })
+      .limit(3),
   ]);
-  if (summaryResult.error || campaignResult.error)
+  if (summaryResult.error || campaignResult.error || dispatchResult.error)
     throw new Error("Dashboard metrics unavailable");
   const summary = summarySchema.parse(summaryResult.data);
   const campaigns = campaignSchema.array().parse(campaignResult.data);
+  const dispatches = dispatchSchema.array().parse(dispatchResult.data);
   const signups = summary.signups.reduce((sum, day) => sum + day.signups, 0);
   return (
     <>
@@ -100,6 +109,79 @@ export default async function DashboardPage() {
           detail="Distinct imported campaigns in your brand"
         />
       </div>
+      {dispatches.length > 0 && (
+        <section className="mb-7 overflow-hidden rounded-xl border border-teal-200 bg-white shadow-sm">
+          <div className="flex flex-wrap items-center justify-between gap-4 p-5">
+            <div>
+              <h2 className="font-semibold">Latest live dispatches</h2>
+              <p className="mt-2 text-xs text-slate-500">
+                Provider observations update in the background. These are
+                separate from imported history.
+              </p>
+            </div>
+            <RefreshStatus automatic />
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-teal-50/50 text-xs text-slate-500">
+                <tr>
+                  {[
+                    "Campaign",
+                    "Approved",
+                    "Accepted",
+                    "Delivered",
+                    "Bounced",
+                    "Unique opens",
+                    "Unsubscribed",
+                  ].map((label) => (
+                    <th className="px-5 py-3 font-medium" key={label}>
+                      {label}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {dispatches.map((d) => (
+                  <tr className="border-t border-slate-100" key={d.id}>
+                    <td className="px-5 py-4">
+                      <Link
+                        href={`/campaigns/${d.campaign_id}/send/${d.id}`}
+                        className="font-semibold text-teal-700"
+                      >
+                        {d.campaign_name}
+                      </Link>
+                      <p className="mt-1 text-xs text-slate-400">
+                        {d.attention_batches
+                          ? "Needs attention"
+                          : d.pending_batches
+                            ? "In progress"
+                            : "Submission recorded"}
+                      </p>
+                    </td>
+                    {[
+                      d.recipient_count,
+                      d.accepted,
+                      d.delivered,
+                      d.bounced,
+                      d.channel === "email" ? d.opened : null,
+                      d.unsubscribed,
+                    ].map((n, index) => (
+                      <td className="px-5 py-4" key={index}>
+                        {n === null ? "Not applicable" : number.format(n)}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p className="border-t border-slate-100 px-5 py-4 text-xs leading-6 text-slate-500">
+            Delivery and engagement count unique saved recipients per event
+            type. Types can overlap; an open is not treated as proof of
+            delivery.
+          </p>
+        </section>
+      )}
       <div className="mb-7 grid gap-6 xl:grid-cols-[minmax(0,1fr)_300px]">
         <section className="min-w-0 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
           <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
