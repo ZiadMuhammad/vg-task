@@ -21,7 +21,7 @@ export async function testConcurrentApproval(url: string) {
     const fixture = (
       await readFile("tests/integration/dispatch.sql", "utf8")
     ).split("set local role authenticated;")[0];
-    await sql.unsafe(fixture + "commit;");
+    await sql.begin((tx) => tx.unsafe(fixture.replace("begin;", "")));
     installed = true;
     const [preview] = await sql.begin(async (tx) => {
       await tx`set local role authenticated`;
