@@ -1,0 +1,46 @@
+@import "tailwindcss";
+@theme inline {
+  --color-background: #f7f8fa;
+  --color-foreground: #17252b;
+  --font-sans: Arial, Helvetica, sans-serif;
+  --font-mono: ui-monospace, monospace;
+}
+body {
+  background: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-sans);
+}
+button,
+a,
+input,
+select,
+summary {
+  -webkit-tap-highlight-color: transparent;
+}
+button:not(:disabled),
+summary {
+  cursor: pointer;
+}
+:focus-visible {
+  outline: 3px solid #0d9488;
+  outline-offset: 3px;
+}
+::selection {
+  background: #ccfbf1;
+}
+input,
+select,
+textarea {
+  font-size: 16px;
+}
+table {
+  font-variant-numeric: tabular-nums;
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

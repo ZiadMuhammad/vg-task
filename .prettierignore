@@ -1,0 +1,11 @@
+node_modules
+.next
+.agents
+.local
+.data
+pnpm-lock.yaml
+schema.sql
+supabase/.temp
+supabase/.branches
+test-results
+playwright-report
