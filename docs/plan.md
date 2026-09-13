@@ -47,3 +47,8 @@ Supabase project: `ebdtyruhetdtqidukyyy`. Repository: `ZiadMuhammad/vg-task`.
 ## Deferred user setup
 
 Google OAuth account mapping and provider configuration are deliberately last. Do not mark this requirement complete until a real Google login is verified.
+
+## Verified progress
+
+- Milestone 1: lint, type checking and production build passed; foundation pushed to the requested repository.
+- Milestone 2: six password users passed direct Supabase REST checks; transactional SQL checks passed on the dedicated hosted project. Disabling brand RLS made the same isolation assertion fail, and rollback restored the policy. Lint, type checking and production build passed. Local Docker was unavailable because the Mac ran out of disk space; CI runs the local database suite. Supabase advisors found no schema security findings; leaked-password protection is disabled in project Auth settings. Google remains deferred.
