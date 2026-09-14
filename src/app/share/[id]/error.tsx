@@ -1,6 +1,8 @@
 "use client";
 import { Button } from "@/components/ui/button";
-export default function ReportError({ reset }: { reset: () => void }) {
+import { useTransition } from "react";
+export default function ReportError({ retry }: { retry: () => void }) {
+  const [pending, startTransition] = useTransition();
   return (
     <main className="grid min-h-screen place-items-center px-5">
       <div className="max-w-md space-y-5 text-center">
@@ -10,7 +12,12 @@ export default function ReportError({ reset }: { reset: () => void }) {
         <p className="text-sm leading-7 text-slate-500">
           We couldn’t load the latest results. Please try again shortly.
         </p>
-        <Button onClick={reset}>Try again</Button>
+        <Button
+          disabled={pending}
+          onClick={() => startTransition(() => retry())}
+        >
+          {pending ? "Reloading…" : "Try again"}
+        </Button>
       </div>
     </main>
   );

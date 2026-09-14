@@ -54,12 +54,16 @@ export default async function ContactsPage({
       </div>
     );
   const filters = parsed.data;
-  const { data, error } = await supabase.rpc("search_contacts", {
-    p_query: filters.q,
-    p_country: filters.country,
-    p_eligibility: filters.eligibility,
-    p_page: filters.page,
-  });
+  const { data, error } = await supabase.rpc(
+    "search_contacts",
+    {
+      p_query: filters.q,
+      p_country: filters.country,
+      p_eligibility: filters.eligibility,
+      p_page: filters.page,
+    },
+    { get: true },
+  );
   if (error) throw new Error("Customer query failed");
   const result = resultSchema.parse(data);
   return (

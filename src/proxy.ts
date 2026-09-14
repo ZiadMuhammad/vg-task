@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { fetchWithGatewayRetry } from "@/lib/supabase/fetch";
 
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
@@ -7,6 +8,7 @@ export async function proxy(request: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
+      global: { fetch: fetchWithGatewayRetry },
       cookies: {
         getAll: () => request.cookies.getAll(),
         setAll: (values) => {

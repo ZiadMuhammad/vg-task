@@ -54,10 +54,11 @@ export async function loadSharedReport(id: string) {
   const cookie = (await cookies()).get("vg_report_session")?.value;
   const session = verifyReportSession(cookie, id, reportSecret(), Date.now());
   if (!session) return null;
-  const { data, error } = await createReportClient().rpc("read_shared_report", {
-    p_report_id: id,
-    p_version: session.version,
-  });
+  const { data, error } = await createReportClient().rpc(
+    "read_shared_report",
+    { p_report_id: id, p_version: session.version },
+    { get: true },
+  );
   if (error) throw new Error("The shared report could not be loaded");
   return data ? reportSchema.parse(data) : null;
 }

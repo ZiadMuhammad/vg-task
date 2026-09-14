@@ -38,7 +38,7 @@ const summarySchema = z.object({
 export default async function DashboardPage() {
   const { supabase, brand } = await requireMembership();
   const [summaryResult, campaignResult, dispatchResult] = await Promise.all([
-    supabase.rpc("dashboard_summary"),
+    supabase.rpc("dashboard_summary", undefined, { get: true }),
     supabase
       .from("campaign_metrics")
       .select("*")

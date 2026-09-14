@@ -1,6 +1,7 @@
 import "server-only";
 import { cache } from "react";
 import { redirect } from "next/navigation";
+import { isAuthRetryableFetchError } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
 
 export const requireMembership = cache(async () => {
@@ -9,6 +10,11 @@ export const requireMembership = cache(async () => {
     data: { user },
     error: authError,
   } = await supabase.auth.getUser();
+  if (
+    isAuthRetryableFetchError(authError) ||
+    (authError?.status !== undefined && authError.status >= 500)
+  )
+    throw new Error("We could not check your session. Please try again.");
   if (authError || !user) redirect("/login");
   const { data, error } = await supabase
     .from("memberships")
