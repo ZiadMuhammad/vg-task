@@ -51,11 +51,21 @@ export default async function LoginPage({
             >
               {error === "access"
                 ? "This account does not have brand access. Sign in with your assigned account."
-                : "We couldn’t complete sign-in. Please try again."}
+                : error === "service"
+                  ? "We couldn’t check your workspace access. Please try signing in again."
+                  : "We couldn’t complete sign-in. Please try again."}
             </p>
           )}
           <LoginForm />
-          {process.env.GOOGLE_AUTH_ENABLED === "true" && <GoogleButton />}
+          {process.env.GOOGLE_AUTH_ENABLED === "true" && (
+            <>
+              <GoogleButton />
+              <p className="mt-4 text-xs leading-5 text-slate-500">
+                First time using Google? Sign in with your assigned password,
+                then connect Google from Account.
+              </p>
+            </>
+          )}
           <p className="mt-7 text-center text-xs leading-5 text-slate-400">
             Access is by invitation. Need help? Contact your workspace
             administrator.

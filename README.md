@@ -2,7 +2,7 @@
 
 A private campaign workspace for Kilele Rides, Karoo Coaches, and Marrakech Express. Built for the Velocity Growth engineering assessment.
 
-[Open the live portal](https://vg-task.vercel.app). The six password accounts are supplied privately. Google OAuth is the remaining setup step; its integration is implemented but disabled until provider configuration and a real login are verified.
+[Open the live portal](https://vg-task.vercel.app). The six password accounts are supplied privately. Google sign-in and authenticated account linking are implemented; provider configuration is installed. Real Google identity linking and sign-in must be verified for each intended account before the full OAuth acceptance criterion is complete. See [Google setup and verification](docs/google-auth.md).
 
 ## Stack
 
@@ -111,6 +111,8 @@ Browser and portal server rendering use the anon key plus the user's JWT. The re
 
 Vercel hosts the web app. Set its production variables from `.env.example` and set `NEXT_PUBLIC_SITE_URL` to the live origin. `.vercelignore` excludes credentials, local data, and build artifacts from uploads; `.gitignore` independently excludes them from source control.
 
-## Final Google setup
+## Google sign-in
 
-Create a Google web OAuth client with origin `https://vg-task.vercel.app` and redirect URI `https://ebdtyruhetdtqidukyyy.supabase.co/auth/v1/callback`. Configure that client in Supabase's Google provider using only basic identity scopes. Map the intended Google email to the existing Kilele owner UUID, preserving its password and membership. Add the live `/auth/callback` URL to Supabase's redirect allowlist, enable `GOOGLE_AUTH_ENABLED=true` in Vercel, and redeploy. Verify Google login and password login resolve to that same membership. Unknown Google identities must still have no brand access. Do not claim this step complete until the live check succeeds.
+Create a Google web OAuth client with origin `https://vg-task.vercel.app` and redirect URI `https://ebdtyruhetdtqidukyyy.supabase.co/auth/v1/callback`. Configure its credentials in Supabase's Google provider using only basic identity scopes. Enable manual identity linking in Supabase and allow the application's `/auth/callback` and `/auth/link/callback` URLs. Enable `GOOGLE_AUTH_ENABLED=true` in Vercel and redeploy.
+
+Each assigned user first signs in with their existing password, opens **Account**, and uses **Connect Google**. Supabase links the Google identity to the already authenticated user; the app never creates a membership or assigns a brand from Google profile data. Subsequent **Continue with Google** sign-ins and password sign-ins must reach that same membership. The original password email stays in use. Unassigned Google users are signed out by the callback and denied portal access. See [the configuration and verification checklist](docs/google-auth.md) for the remaining live checks.

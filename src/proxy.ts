@@ -33,6 +33,7 @@ export const config = {
     "/contacts/:path*",
     "/campaigns/:path*",
     "/imports/:path*",
+    "/account/:path*",
     "/login",
   ],
 };

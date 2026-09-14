@@ -2,7 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChartNoAxesCombined, Users, Send, FileInput } from "lucide-react";
+import {
+  ChartNoAxesCombined,
+  Users,
+  Send,
+  FileInput,
+  UserRound,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const items = [
@@ -10,6 +16,7 @@ const items = [
   { href: "/contacts", label: "Customers", icon: Users },
   { href: "/campaigns", label: "Campaigns", icon: Send },
   { href: "/imports", label: "Import history", icon: FileInput },
+  { href: "/account", label: "Account", icon: UserRound },
 ];
 
 export function Navigation() {
@@ -17,7 +24,7 @@ export function Navigation() {
   return (
     <nav
       aria-label="Main navigation"
-      className="grid grid-cols-2 gap-1 sm:grid-cols-4 lg:grid-cols-1"
+      className="grid grid-cols-2 gap-1 sm:grid-cols-5 lg:grid-cols-1"
     >
       {items.map(({ href, label, icon: Icon }) => (
         <Link

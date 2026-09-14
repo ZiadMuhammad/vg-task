@@ -46,7 +46,7 @@ Supabase project: `ebdtyruhetdtqidukyyy`. Repository: `ZiadMuhammad/vg-task`.
 
 ## Deferred user setup
 
-Google OAuth account mapping and provider configuration are deliberately last. Do not mark this requirement complete until a real Google login is verified.
+Google OAuth account mapping and provider configuration are deliberately last. Provider configuration and authenticated account linking are now implemented; do not mark the full requirement complete until the intended Google logins are verified. See `docs/google-auth.md` for the current checklist.
 
 ## Verified progress
 

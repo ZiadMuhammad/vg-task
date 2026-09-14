@@ -32,6 +32,6 @@ Use the six credentials in the private handoff. The public repository deliberate
 - Consent rules favor withholding an uncertain destination. Shared destinations linked to a non-contactable customer are excluded from sending.
 - Cron runs every minute; provider scans repeat to collect delayed reports. This is eventual synchronization, not instant delivery. Errors and the oldest batch synchronization time stay visible.
 - The provider sometimes emits unknown recipients and stalled cursors. Those issues are recorded for inspection, and do not become successful delivery counts.
-- Google OAuth must be configured and verified with a real account before claiming the assessment is complete.
+- Google is configured. Demonstrate **Account → Connect Google** from an assigned password account, then sign out and return with **Continue with Google**. Verify the same brand/role and that password login still works. Track the six intended identities and the unrelated-account rejection in `docs/google-auth.md` before claiming the assessment is complete.
 
 AI assistance was OpenAI Codex for planning, implementation, review, testing, and documentation. Read these entry points and run the demo yourself before the interview; be able to explain why each guarantee is in the database rather than relying on a button being hidden.
